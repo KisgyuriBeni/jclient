@@ -7,22 +7,14 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
-import java.util.Properties;
 
-public class Client {
-    String host;
-    String endpoint;
+public class Client { 
+
     HttpClient client;
-    Properties prop;
     public Client(){
-        this.prop = new Prop().getProp();
-        this.host= this.prop.getProperty("host");
-        this.endpoint =this.prop.getProperty("endpoint");
         client = HttpClient.newHttpClient();
-        String url = this.host + this.endpoint;
-    
-        System.out.println(get(url));
     }
+
     public String get(String url){
         String response="";
         try{
@@ -36,6 +28,7 @@ public class Client {
         }return response;
 
     }
+
     public String tryGet(String url) throws IOException, InterruptedException{
         HttpRequest request =  HttpRequest.newBuilder()
         .uri(URI.create(url))
@@ -45,8 +38,20 @@ public class Client {
         return response.body();
     }
 
-    public String tryPost(String url, String body, String...token) throws IOException, InterruptedException{
+    public String post(String url, String body, String...token){
+        String result = "";
+        try {
+            result = tryPost(url, body, token);
+        }catch (InterruptedException e) {
+            System.err.println("Hiba! Megszakítás történt!");
+            System.err.println(e.getMessage());
+        }catch(Exception e){
+            System.err.println("Hiba! Átvitel nem lehetséges!");
+            System.err.println(e.getMessage());
+        }return result;        
+    }
 
+    public String tryPost(String url, String body, String...token) throws IOException, InterruptedException{
         ArrayList<String> headers = new ArrayList<>();
         headers.add("Content-type");
         headers.add("Application/json");
@@ -54,13 +59,12 @@ public class Client {
         if(token.length > 0){
             headers.add("Authorization");
             headers.add("Bearer" + token);
-
         }
 
         HttpRequest request =  HttpRequest.newBuilder()
         .uri(URI.create(url))
-        .headers()
-        .POST(null)
+        .headers(headers.toArray(String[]::new))
+        .POST(HttpRequest.BodyPublishers.ofString(body))
         .build();
 
         HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
