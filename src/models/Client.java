@@ -15,50 +15,40 @@ public class Client {
         client = HttpClient.newHttpClient();
     }
 
-    public String get(String url){
-        String response="";
-        try{
-            response = tryGet(url);
-        }catch(IOException e){
-            System.err.println("Hiba! A RestAPI lekérdezése sikertelen!");
-            System.err.println(e.getMessage());
-        }catch(InterruptedException e){
-            System.err.println("Hiba! A lekérdezés megszakadt!");
-            System.err.println(e.getMessage());
-        }return response;
 
+    public String Get(String url){
+
+        HttpRequest request = genGetRequest(url);
+        return sendRequest(request);
     }
 
-    public String tryGet(String url) throws IOException, InterruptedException{
+ 
+    public HttpRequest genGetRequest(String url){
+        
         HttpRequest request =  HttpRequest.newBuilder()
         .uri(URI.create(url))
         .GET()
         .build();
-        HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
-        return response.body();
+
+        return request;
+        
+
+        
+    }
+    public String Post(String url, String body, String...args){
+        HttpRequest request = genPostRequest(url, body, args);
+        return sendRequest(request);
     }
 
-    public String post(String url, String body, String...token){
-        String result = "";
-        try {
-            result = tryPost(url, body, token);
-        }catch (InterruptedException e) {
-            System.err.println("Hiba! Megszakítás történt!");
-            System.err.println(e.getMessage());
-        }catch(Exception e){
-            System.err.println("Hiba! Átvitel nem lehetséges!");
-            System.err.println(e.getMessage());
-        }return result;        
-    }
-
-    public String tryPost(String url, String body, String...token) throws IOException, InterruptedException{
-        ArrayList<String> headers = new ArrayList<>();
+    public HttpRequest genPostRequest(String url, String body, String ...args){
+        
+          ArrayList<String> headers = new ArrayList<>();
         headers.add("Content-type");
         headers.add("Application/json");
 
-        if(token.length > 0){
+        if(args.length > 0){
             headers.add("Authorization");
-            headers.add("Bearer" + token);
+            headers.add("Bearer" + args);
         }
 
         HttpRequest request =  HttpRequest.newBuilder()
@@ -67,6 +57,24 @@ public class Client {
         .POST(HttpRequest.BodyPublishers.ofString(body))
         .build();
 
+        return request;
+    }
+
+
+    public String sendRequest(HttpRequest request){
+        String result="";
+        try {
+            result = trySendRequest(request);
+        }catch (InterruptedException e) {
+            System.err.println("Hiba! Megszakítás történt!");
+            System.err.println(e.getMessage());
+        }catch(IOException e){
+            System.err.println("Hiba! Átvitel nem lehetséges!");
+            System.err.println(e.getMessage());
+        }return result;
+     }
+
+    public String trySendRequest(HttpRequest request) throws IOException, InterruptedException{
         HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
         return response.body();
     }

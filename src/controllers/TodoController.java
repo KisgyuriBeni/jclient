@@ -20,7 +20,7 @@ public class TodoController {
 
     public void index(){
         String url = this.host+this.endpoint;
-        String res = client.get(url);
+        String res = client.Get(url);
         System.out.println(res);
     }
     public void create(){
@@ -29,7 +29,7 @@ public class TodoController {
         " \"title\":\"Telefon eldobás\", "+ 
         " \"completed\":\"false\" " + 
         " }";
-        String res = client.post(url, body);
+        String res = client.Post(url, body);
         System.out.println(res);
     }
     public void update(){}
